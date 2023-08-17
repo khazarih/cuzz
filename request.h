@@ -1,23 +1,25 @@
 #include <curl/curl.h>
 #include "core.h"
 #include "types.h"
+#include <algorithm>
+#include <iterator>
 
 
 using namespace std;
 
 
 bool filterByStatusCode(int status_code, int *status_codes) {
-    bool filter = false;
-    
-    for (int index = 0; index < sizeof(status_codes)/sizeof(status_codes[0]); index++) {
+    bool result = false;
+
+    int index = 0;
+    while (status_codes[index] != '\0') {
         if (status_codes[index] == status_code) {
-            // cout << status_code << " : " << status_codes[index] << endl;;
-            filter = true;
-            break;
+            result = true;
         }
+        index += 1;
     }
 
-    return filter;
+    return result;
 }
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
