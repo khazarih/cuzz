@@ -1,5 +1,7 @@
 # cuzz
 
+just a web fuzzer
+
 ## compile and run
 
 ```bash
