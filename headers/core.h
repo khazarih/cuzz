@@ -5,8 +5,6 @@
 #include <regex>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <vector>
-#include <pthread.h>
 #include <curl/curl.h>
 #include "types.h"
 
@@ -117,6 +115,7 @@ int *getStatusCodesFromUser(string codes)
     {
         if (arr_status_codes[i] == "STOP")
         {
+            int_arr_status_codes[i] = 777;
             break;
         }
         int_arr_status_codes[i] = stoi(arr_status_codes[i]);
@@ -131,7 +130,7 @@ bool file_exists(string name)
     return f.good();
 }
 
-bool filterByStatusCode(int status_code, int *status_codes)
+bool filterByStatusCode(int status_code, const int *status_codes)
 {
     bool result = false;
 
@@ -140,6 +139,7 @@ bool filterByStatusCode(int status_code, int *status_codes)
     {
         if (status_codes[index] == status_code)
         {
+            // cout << "CODE Filtered: " << status_codes[index] << " Response: " << status_code << endl;
             result = true;
         }
         index += 1;
@@ -148,12 +148,17 @@ bool filterByStatusCode(int status_code, int *status_codes)
     return result;
 }
 
+struct ResponseData {
+    long http_code; 
+    string response_text; 
+};
+
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-    size_t totalSize = size * nmemb;
-    auto *response = static_cast<string *>(userp);
-    response->append(static_cast<char *>(contents), totalSize);
-    return totalSize;
+    size_t real_size = size * nmemb;
+    ResponseData* data = static_cast<ResponseData*>(userp);
+    data->response_text.append(static_cast<char*>(contents), real_size);
+    return real_size;
 }
 
 long getStatusCode(CURL *curl)
@@ -163,15 +168,17 @@ long getStatusCode(CURL *curl)
     return http_code;
 }
 
-void request(string url, filter filter_response, bool follow_redirect = false)
+
+void request(const RequestArgs& args)
 {
     CURL *curl = curl_easy_init();
     if (curl)
     {
-        string response;
+        ResponseData response;
+        const string& url = args.url;
 
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        if (follow_redirect)
+        if (args.follow_redirect)
         {
             curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         }
@@ -182,32 +189,16 @@ void request(string url, filter filter_response, bool follow_redirect = false)
 
         if (res != CURLE_OK)
         {
-            cerr << "cURL error: " << curl_easy_strerror(res) << endl;
             curl_easy_cleanup(curl);
             return;
         }
         int status_code = getStatusCode(curl);
 
-        if (filterByStatusCode(status_code, filter_response.status_codes) == true)
+        if (filterByStatusCode((int)status_code, args.filter_response.status_codes) == true)
         {
             return;
         }
 
         cout << "Status code: " << status_code << " URL: " << url << endl;
     }
-}
-
-void fuzz(string base_url, string wordlist, filter filter_response, bool follow_redirect)
-{
-    string text;
-    ifstream file(wordlist);
-    string url;
-
-    while (getline(file, text))
-    {
-        url = base_url + "/" + text;
-        request(url, filter_response, follow_redirect);
-    }
-
-    file.close();
 }

@@ -12,17 +12,3 @@ test
 search
 rock
 imghp
-webhp
-webhp
-webhp
-test
-search
-rock
-imghp
-webhp
-webhp
-webhp
-test
-search
-rock
-imghp

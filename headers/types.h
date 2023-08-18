@@ -7,8 +7,8 @@ typedef struct {
     int content_length[10];
 } filter;
 
-struct args {
-    const char* url;
+struct RequestArgs {
+    string url;
     filter filter_response;
     bool follow_redirect;
 };

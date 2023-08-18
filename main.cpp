@@ -1,6 +1,9 @@
 #include <iostream>
-#include "core.h"
-#include "types.h"
+#include "headers/core.h"
+#include "headers/types.h"
+#include <thread>
+#include <vector>
+
 
 using namespace std;
 
@@ -38,10 +41,10 @@ int main(int argc, char **argv)
         }
     }
 
-    string url = (string)argv[1];
+    string base_url = (string)argv[1];
     string wordlist = (string)argv[2];
 
-    if (!isValidUrl(url)) {
+    if (!isValidUrl(base_url)) {
         return 1;
     }
 
@@ -50,5 +53,22 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    fuzz(url, wordlist, filter_response, follow_redirect);
+    vector<thread> threads;
+
+    string text;
+    ifstream file(wordlist);
+    string url;
+
+    while (getline(file, text))
+    {
+        string url = base_url + "/" + text;
+        RequestArgs args{url, filter_response, follow_redirect};
+        threads.emplace_back(request, args);
+    }
+
+    for (thread& thread : threads) {
+        thread.join();
+    }
+
+    file.close();
 }
