@@ -50,6 +50,5 @@ int main(int argc, char **argv)
         return 1;
     }
 
-
     fuzz(url, wordlist, filter_response, follow_redirect);
 }
