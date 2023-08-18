@@ -40,13 +40,13 @@ int* getStatusCodesFromUser(string codes) {
     return int_arr_status_codes;
 }
 
-void fuzz(string base, string wordlist, filter filter_response) {
+void fuzz(string base_url, string wordlist, filter filter_response) {
     string text;
     ifstream file(wordlist);
     string url;
 
     while (getline (file, text)) {
-        url = base + "/" + text;
+        url = base_url + "/" + text;
         request(url, filter_response);
     }
 

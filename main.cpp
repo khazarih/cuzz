@@ -14,20 +14,19 @@ int main(int argc, char **argv)
 {
     filter filter_response;
 
-    if (argc < 2)
+    if (argc < 3)
     {
         usage();
         return 1;
     }
     
-    if (argc <= 4) {
+    if (argc == 4) {
         string status_codes = (string)argv[3];
         int *status_codes_int = getStatusCodesFromUser(status_codes);
         
         int index = 0;
         while (status_codes_int[index] != '\0') {
             filter_response.status_codes[index] = status_codes_int[index];
-            // cout << filter_response.status_codes[index] << endl;
             index += 1;
         }
     }
