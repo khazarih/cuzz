@@ -12,3 +12,6 @@ test
 search
 rock
 imghp
+auth/login
+auth/register
+profile

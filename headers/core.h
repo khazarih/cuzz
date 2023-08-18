@@ -16,8 +16,6 @@ void usage()
     message += "cuzz https://url wordlist \n\n";
     message += "Filter by status codes. Comma seperated \n";
     message += "cuzz https://url wordlist 404,403 \n\n";
-    message += "Follow redirects? Just add 'yes' as 4th option \n";
-    message += "cuzz https://url wordlist 404,403 yes \n\n";
     cout << message << endl;
 }
 
@@ -178,10 +176,7 @@ void request(const RequestArgs& args)
         const string& url = args.url;
 
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        if (args.follow_redirect)
-        {
-            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        }
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
@@ -192,6 +187,7 @@ void request(const RequestArgs& args)
             curl_easy_cleanup(curl);
             return;
         }
+
         int status_code = getStatusCode(curl);
 
         if (filterByStatusCode((int)status_code, args.filter_response.status_codes) == true)

@@ -34,13 +34,6 @@ int main(int argc, char **argv)
         }
     }
 
-    if (argc == 5) {
-        string redirect = (string)argv[4];
-        if (redirect == "yes") {
-            follow_redirect = true;
-        }
-    }
-
     string base_url = (string)argv[1];
     string wordlist = (string)argv[2];
 
