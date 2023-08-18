@@ -35,12 +35,15 @@ long getStatusCode(CURL* curl) {
     return http_code;
 }
 
-void request(string url, filter filter_response) {
+void request(string url, filter filter_response, bool follow_redirect=false) {
     CURL* curl = curl_easy_init();
     if (curl) {
         string response;
 
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        if (follow_redirect) {
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        }
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 

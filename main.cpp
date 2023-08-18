@@ -1,21 +1,25 @@
 #include <iostream>
 #include "core.h"
 #include "types.h"
-#include <netdb.h>
-#include <arpa/inet.h>
 
 using namespace std;
 
 int main(int argc, char **argv)
 {
     filter filter_response;
-
+    bool follow_redirect = false;
+    
     if (argc < 3)
     {
         usage();
         return 1;
     }
     
+    if (argv[1] == "help") {
+        usage();
+        return 0;
+    }
+
     if (argc == 4) {
         string status_codes = (string)argv[3];
         int *status_codes_int = getStatusCodesFromUser(status_codes);
@@ -27,13 +31,17 @@ int main(int argc, char **argv)
         }
     }
 
+    if (argc == 5) {
+        string redirect = (string)argv[4];
+        if (redirect == "yes") {
+            follow_redirect = true;
+        }
+    }
+
     string url = (string)argv[1];
     string wordlist = (string)argv[2];
 
-    string hostname = removeHttpPrefix(url);
-    struct hostent* host = gethostbyname(hostname.c_str());
-    if (!host) {
-        cout << "Could not resolve the hostname: " << hostname << endl;
+    if (!isValidUrl(url)) {
         return 1;
     }
 
@@ -43,5 +51,5 @@ int main(int argc, char **argv)
     }
 
 
-    fuzz(url, wordlist, filter_response);
+    fuzz(url, wordlist, filter_response, follow_redirect);
 }

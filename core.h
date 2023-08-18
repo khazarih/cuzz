@@ -3,27 +3,73 @@
 #include <fstream>
 #include "request.h"
 #include "types.h"
+#include <regex>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 
 using namespace std;
 
 void usage()
 {
-    string message = "Usage: \ncuzz https://url/FUZZ wordlist \n\n";
+    string message = "Usage: \ncuzz help\n\n";
+    message +="cuzz https://url wordlist \n\n";
     message += "Filter by status codes. Comma seperated \n";
-    message += "cuzz https://url/FUZZ wordlist 404,403 \n\n";
+    message += "cuzz https://url wordlist 404,403 \n\n";
+    message += "Follow redirects? Just add 'yes' as 4th option \n";
+    message += "cuzz https://url wordlist 404,403 yes \n\n";
     cout << message << endl;
 }
 
-string removeHttpPrefix(string url) {
+
+string extractDomain(string url) {
+    regex domainRegex(R"(https?://([^/]+))");
+
+    smatch matches;
+    if (regex_search(url, matches, domainRegex)) {
+        if (matches.size() >= 2) {
+            return matches[1].str();
+        }
+    }
+
+    return "";
+}
+
+bool httpPrefixCheck(string url) {
     string result = url;
 
     if (result.compare(0, 7, "http://") == 0) {
-        result.erase(0, 7);
+        return true;
     } else if (result.compare(0, 8, "https://") == 0) {
-        result.erase(0, 8);
+        return true;
+    } else {
+        return false;
     }
-    return result;
+}
+
+bool isValidUrl(string url) {
+    string hostname;
+
+    if(!httpPrefixCheck(url)) {
+        cout << "Please type url with HTTP scheme (http:// or https://)\n";
+        return false;
+    }
+
+    string extracted = extractDomain(url);
+
+    if (extracted.length() > 0) {
+        hostname = extractDomain(url);
+    }else {
+        hostname = url;
+    }
+
+    struct hostent* host = gethostbyname(hostname.c_str());
+    if (!host) {
+        cout << "Could not resolve the hostname: " << hostname << endl;
+        return false;
+    }
+
+    return true;
 }
 
 int* getStatusCodesFromUser(string codes) {
@@ -63,14 +109,14 @@ bool file_exists (string name) {
     return f.good();
 }
 
-void fuzz(string base_url, string wordlist, filter filter_response) {
+void fuzz(string base_url, string wordlist, filter filter_response, bool follow_redirect) {
     string text;
     ifstream file(wordlist);
     string url;
 
     while (getline (file, text)) {
         url = base_url + "/" + text;
-        request(url, filter_response);
+        request(url, filter_response, follow_redirect);
     }
 
     file.close();
