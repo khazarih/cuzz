@@ -7,6 +7,24 @@
 
 using namespace std;
 
+void usage()
+{
+    string message = "Usage: \ncuzz https://url/FUZZ wordlist \n\n";
+    message += "Filter by status codes. Comma seperated \n";
+    message += "cuzz https://url/FUZZ wordlist 404,403 \n\n";
+    cout << message << endl;
+}
+
+string removeHttpPrefix(string url) {
+    string result = url;
+
+    if (result.compare(0, 7, "http://") == 0) {
+        result.erase(0, 7);
+    } else if (result.compare(0, 8, "https://") == 0) {
+        result.erase(0, 8);
+    }
+    return result;
+}
 
 int* getStatusCodesFromUser(string codes) {
     string arr_status_codes[10];
@@ -38,6 +56,11 @@ int* getStatusCodesFromUser(string codes) {
     }
 
     return int_arr_status_codes;
+}
+
+bool file_exists (string name) {
+    ifstream f(name.c_str());
+    return f.good();
 }
 
 void fuzz(string base_url, string wordlist, filter filter_response) {
